@@ -147,7 +147,7 @@ HolaFB.prototype.hasPermission = function(permission) {
 HolaFB.prototype.getFriends = function() {
   var that = this;
   return new Promise(function(resolve, reject) {
-    that._getFriendCacheData('friends', callback,
+    that._getFriendCacheData('friends', 
       {fields: 'id,name,first_name,picture.width(120).height(120)',limit: 8})
     .then(function(response) {
       resolve(response);
