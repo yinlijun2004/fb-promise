@@ -458,6 +458,14 @@ HolaFB.prototype.apiInvite = function(to, message) {
   return this.apiAppRequests(to, options); 
 }
 
+HolaFB.prototype.apiRecommend = function(to, message) {
+  var options = {};
+  if(message) options.message = message;
+  options.action_type = "recommend";
+
+  return this.apiAppRequests(to, options);
+}
+
 HolaFB.prototype.getRequestInfo = function(id){
   return new Promise(function(resolve, reject) {
     FB.api(String(id), {fields: 'from{id,name,picture}' }, function(response){
