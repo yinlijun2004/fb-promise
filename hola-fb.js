@@ -18,6 +18,12 @@ var HolaFB = function(options) {
   this.subscribe('auth.statusChange', this._onStatusChange.bind(this));
 };
 
+
+HolaFB.FRIEND_SHARE = 0;
+HolaFB.FRIEND_NONIFICATIONS = 1;
+HolaFB.FRIEND_REQUEST = 2;
+HolaFB.FRIEND_SCORE = 3;
+
 HolaFB.friendCache = {
   me: {},
   user: {},
@@ -136,6 +142,20 @@ HolaFB.prototype.hasPermission = function(permission) {
       return true;
   }
   return false;
+};
+
+HolaFB.prototype.getFriends(callback) {
+  var that = this;
+  return new Promise(function(resolve, reject) {
+    that._getFriendCacheData('friends', callback,
+      {fields: 'id,name,first_name,picture.width(120).height(120)',limit: 8})
+    .then(function(response) {
+      resolve(response);
+    })
+    .catch(function(error) {
+      reject(error);
+    });
+  });
 };
 
 HolaFB.prototype.getInvitableFriends = function() {
@@ -316,6 +336,12 @@ HolaFB.prototype.sendBrag = function(caption, name, picture) {
   });
 };
 
+/*
+ * 发送分数，只有超过最高分才会被resolve,否则被reject
+ * @param {score} 分数
+ *
+ * @return Promise对象
+ */
 HolaFB.prototype.sendScore = function(score) {
   return new Promise(function(resolve, reject) {
     // Check current score, post new one only if it's higher
@@ -342,7 +368,14 @@ HolaFB.prototype.sendScore = function(score) {
 }
 
 ////////////////////////////////////
-//调起挑战对话框
+/*
+ * 调起挑战对话框
+ * @param {to} 被挑战者user id
+ * @param {message} 挑战信息
+ * @param {turn} 回合制游戏
+ *
+ * @return Promise对象
+ */
 HolaFB.prototype.sendChallenge = function(to, message, turn) {
   var options = {
     method: 'apprequests'
@@ -358,7 +391,7 @@ HolaFB.prototype.sendChallenge = function(to, message, turn) {
 }
 
 /*
- * @param {to} the user id will request to
+ * @param {to} 被请求者user id
  * @param: {option}
  * option.action_type: enum{SEND, ASKFOR, TURN, GIFT, INVITE, RECOMMEND}, 请求对象类型
  * option.data: string, 作为请求对象的补充信息，最长255字节
@@ -366,7 +399,7 @@ HolaFB.prototype.sendChallenge = function(to, message, turn) {
  * option.message: string, 必填,请求的信息
  * option.object_id numeric string or integer, 开放图谱对象ID
  *
- * @return a promise object
+ * @return Promise对象
  *
  * @reference https://developers.facebook.com/docs/graph-api/reference/user/apprequests/
  */
@@ -394,6 +427,14 @@ HolaFB.prototype.apiAppRequests = function(to, option) {
   });
 }
 
+/*
+ * 通过图谱API发送挑战
+ * @param {to} 被挑战者user id
+ * @param {message} 挑战信息
+ * @param {turn} 是否回合制游戏
+ *
+ * @return Promise对象
+ */
 HolaFB.prototype.apiChallenge = function(to, message, turn) {
   var options = {};
   if(message) options.message = message;
@@ -402,6 +443,13 @@ HolaFB.prototype.apiChallenge = function(to, message, turn) {
   return this.apiAppRequests(to, options);
 }
 
+/*
+ * 通过图谱API发送邀请
+ * @param {to} 被邀请者user id
+ * @param {message} 邀请信息
+ *
+ * @return Promise对象
+ */
 HolaFB.prototype.apiInvite = function(to, message) {
   var options = {};
   if(message) options.message = message;
@@ -433,6 +481,7 @@ HolaFB.prototype.deleteRequest = function(id, callback) {
     });
   });
 }
+
 /////////////////////////////////////////
 //achievement
 HolaFB.prototype.registerAchievement = function(id) {
