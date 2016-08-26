@@ -144,7 +144,7 @@ HolaFB.prototype.hasPermission = function(permission) {
   return false;
 };
 
-HolaFB.prototype.getFriends(callback) {
+HolaFB.prototype.getFriends = function() {
   var that = this;
   return new Promise(function(resolve, reject) {
     that._getFriendCacheData('friends', callback,
